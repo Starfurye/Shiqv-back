@@ -27,13 +27,6 @@ const signup = async (req, res, next) => {
     }
     const { name, email, password } = req.body;
 
-    // const hasUser = DUMMY_USERS.find((u) => u.email === email);
-    // if (hasUser) {
-    //     throw new HttpError(
-    //         "Could not create user, email already exists.",
-    //         422
-    //     );
-    // }
     let existingUser = null;
     try {
         existingUser = await User.findOne({ email: email });
@@ -68,7 +61,7 @@ const signup = async (req, res, next) => {
         token = jwt.sign(
             { userId: createdUser.id, email: createdUser.email },
             process.env.JWT_KEY,
-            { expiresIn: "12h" }
+            { expiresIn: "2h" }
         );
     } catch {
         return next(new HttpError("创建用户失败"), 500);
@@ -77,20 +70,13 @@ const signup = async (req, res, next) => {
     res.status(201).json({
         userId: createdUser.id,
         email: createdUser.email,
-        token,
+        token: token,
     });
 };
 
 const login = async (req, res, next) => {
     const { email, password } = req.body;
 
-    // const identifiedUser = DUMMY_USERS.find((u) => u.email === email);
-    // if (!identifiedUser || identifiedUser.password !== password) {
-    //     throw new HttpError(
-    //         "Could not identify user, credentials seem to be wrong.",
-    //         401
-    //     );
-    // }
     let identifiedUser = null;
     try {
         identifiedUser = await User.findOne({ email: email });
