@@ -1,0 +1,9 @@
+{
+    "env": {
+        "DB_USER": "star",
+        "DB_PASSWORD": "KeeJLGpeKycLgPoB",
+        "DB_NAME": "mern",
+        "AMAP_API_KEY": "5405e59751dc07b574a1c30ede337856",
+        "JWT_KEY": "top_SECRET_do_NOT_share_with_anyone"
+    }
+}

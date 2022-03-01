@@ -142,10 +142,7 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
-# 用户上传的文件
-uploads/
-
-# 开发环境配置
+# 测试环境
 nodemon.json
 
 # End of https://www.toptal.com/developers/gitignore/api/node
