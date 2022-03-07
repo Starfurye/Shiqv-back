@@ -7,24 +7,9 @@ const getCoordsForAddress = require("../util/location");
 const Place = require("../models/place");
 const User = require("../models/user");
 
-// let DUMMY_PLACES = [
-//     {
-//     "title": "龙洲塔",
-//     "description": "龙游县文物古迹榜 第四名",
-//     "address": "浙江省衢州市龙游县龙洲路356号",
-//     "creator": "62108650beb409becd91cf99"
-//      },
-//     {
-//     "title": "龙游石窟",
-//     "description": "龙游县文物古迹榜 第一名",
-//     "address": "浙江省衢州市龙游县小南海镇石岩背村",
-//     "creator": "62108650beb409becd91cf99"
-//      }
-// ];
-
 const getPlaceById = async (req, res, next) => {
     const placeId = req.params.pid; // { pid: 'p1' }
-    let place = null;
+    let place;
 
     try {
         place = await Place.findById(placeId);
@@ -33,26 +18,17 @@ const getPlaceById = async (req, res, next) => {
     }
 
     if (!place) {
-        return next(
-            new HttpError("Could not find a place for the provided id.", 404)
-        );
+        return next(new HttpError("没有id对应的地点", 404));
     }
 
     // 让mongoose在返回对象里增加一个不带下划线的'id'属性
     res.json({ place: place.toObject({ getters: true }) }); // => { place } => { place: place }
 };
 
-// function getPlaceById() { ... }
-// const getPlaceById = function() { ... }
-
 const getPlacesByUserId = async (req, res, next) => {
     const userId = req.params.uid;
 
-    // const places = DUMMY_PLACES.filter((p) => {
-    //     return p.creator === userId;
-    // });
     let user = null;
-
     try {
         // 用populate('xxx')以后就能通过user.xxx访问
         user = await User.findById(userId).populate("places");
@@ -77,7 +53,6 @@ const createPlace = async (req, res, next) => {
         );
     }
 
-    // const { title, description, address, creator } = req.body;
     const { title, description, address } = req.body;
 
     // 利用Api做地址解析
@@ -94,7 +69,7 @@ const createPlace = async (req, res, next) => {
         address,
         location: coordinates,
         image: req.file.path,
-        creator: req.userData.userId,
+        creator: req.userData.userId, // 使用不可伪造的 token
     });
 
     let user = null;
@@ -115,11 +90,8 @@ const createPlace = async (req, res, next) => {
         await user.save({ session: session });
         session.commitTransaction();
     } catch (err) {
-        // 异步操作不要throw，而要返回并传给下一个中间件
         return next(new HttpError("无法创建地点，请重试", 500));
     }
-
-    // DUMMY_PLACES.push(createdPlace);
 
     res.status(201).json({ place: createdPlace });
 };
@@ -127,18 +99,13 @@ const createPlace = async (req, res, next) => {
 const updatePlace = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        throw new HttpError(
-            "Invalid inputs passed, please check your data.",
-            422
-        );
+        throw new HttpError("不正确的输入格式，请检查输入", 422);
     }
 
     const { title, description } = req.body;
     const placeId = req.params.pid;
-    // const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
-    // const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
 
-    let updatedPlace = null;
+    let updatedPlace;
     try {
         updatedPlace = await Place.findById(placeId);
     } catch {
@@ -151,7 +118,6 @@ const updatePlace = async (req, res, next) => {
     updatedPlace.title = title;
     updatedPlace.description = description;
 
-    // DUMMY_PLACES[placeIndex] = updatedPlace;
     try {
         await updatedPlace.save();
     } catch {
@@ -165,12 +131,8 @@ const updatePlace = async (req, res, next) => {
 
 const deletePlace = async (req, res, next) => {
     const placeId = req.params.pid;
-    // if (!DUMMY_PLACES.find((p) => p.id === placeId)) {
-    //     throw new HttpError("Could not find a place for that id.", 404);
-    // }
-    // DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
 
-    let deletedPlace = null;
+    let deletedPlace;
     try {
         // populate 会调动和 model 中 ref 相关的 collection
         deletedPlace = await Place.findById(placeId).populate("creator");
@@ -184,7 +146,6 @@ const deletePlace = async (req, res, next) => {
         return next(new HttpError("没有删除地点权限", 401));
 
     const imagePath = deletedPlace.image;
-
     try {
         const session = await mongoose.startSession();
         session.startTransaction();

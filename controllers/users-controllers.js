@@ -21,13 +21,11 @@ const getUsers = async (req, res, next) => {
 const signup = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(
-            new HttpError("Invalid inputs passed, please check your data.", 422)
-        );
+        return next(new HttpError("不正确的输入格式，请检查输入", 422));
     }
     const { name, email, password } = req.body;
 
-    let existingUser = null;
+    let existingUser;
     try {
         existingUser = await User.findOne({ email: email });
     } catch {
@@ -70,7 +68,7 @@ const signup = async (req, res, next) => {
     res.status(201).json({
         userId: createdUser.id,
         email: createdUser.email,
-        token: token,
+        token,
     });
 };
 

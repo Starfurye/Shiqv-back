@@ -30,7 +30,7 @@ app.use("/api/users", usersRoutes);
 
 // 找不到路由的中间件
 app.use((req, res, next) => {
-    const error = new HttpError("Could not find this route", 404);
+    const error = new HttpError("找不到路由", 404);
     throw error;
 });
 
@@ -46,7 +46,7 @@ app.use((error, req, res, next) => {
         return next(error);
     }
     res.status(error.code || 500);
-    res.json({ message: error.message || "An unknown error occurred!" });
+    res.json({ message: error.message || "发生未知错误" });
 });
 
 mongoose
